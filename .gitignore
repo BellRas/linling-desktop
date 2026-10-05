@@ -1,0 +1,21 @@
+# Local user data and secrets
+settings.json
+conversations.jsonl
+memories.json
+memories.json.bak
+*.tmp
+
+# Build and editor artifacts
+bin/
+build/
+obj/
+.vs/
+*.user
+*.suo
+
+# Windows metadata
+Thumbs.db
+Desktop.ini
+
+# Release packages
+*-Windows.zip
