@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace Qingling {
 public static class MotionData {
- public static readonly int[] Counts={16,24,24,16,20,24,18,18,18,0,0,16,16,12,12,12,32};
+ public static readonly int[] Counts={16,24,24,16,20,24,18,18,18,0,0,16,16,12,12,12,32,24};
  public static int Index(int row,int col){return 136+row*32+col;}
  public static int Row(int index){return index>=136?(index-136)/32:index/8;}
 }

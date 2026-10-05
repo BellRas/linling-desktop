@@ -178,9 +178,9 @@ public sealed class AnimationEngine {
  public int CurrentRow(double now){if(DragRow>=0)return DragRow;if(PreviewRow>=0)return PreviewRow;if(DockRow>=0)return DockRow;if(now<until&&transient>=0)return transient;return Busy?7:0;}
  public static int FrameCount(int row){return MotionData.Counts[row];}
  static readonly Dictionary<int,int[]> timing=new Dictionary<int,int[]>();
- public static int[] Timing(int row){int[] values;if(timing.TryGetValue(row,out values))return values;int count=FrameCount(row),total=row==16?2600:row>=13||row==1||row==2?1200:row>=11?800:row==0?1800:Durations[row].Sum();values=new int[count];for(int i=0;i<count;i++)values[i]=total/count;values[count-1]+=total%count;timing[row]=values;return values;}
+ public static int[] Timing(int row){int[] values;if(timing.TryGetValue(row,out values))return values;int count=FrameCount(row),total=row==17?3600:row==16?2600:row>=13||row==1||row==2?1200:row>=11?800:row==0?1800:Durations[row].Sum();values=new int[count];for(int i=0;i<count;i++)values[i]=total/count;values[count-1]+=total%count;timing[row]=values;return values;}
  public int Frame(double now,double speed){int row=CurrentRow(now);bool largeStride=(row==1||row==2)&&DragRow==row;var ds=largeStride?LargeDragTiming:Timing(row);double delta=lastTime<0?0:Math.Max(0,now-lastTime);lastTime=now;
-  if(row==16)speed=Math.Min(speed,1); // Seated companionship stays calm at high action speeds.
+  if(row==16||row==17)speed=Math.Min(speed,1); // Seated and sleeping loops stay calm at high action speeds.
   if(row!=last){bool reverse=(row==1&&last==2)||(row==2&&last==1);if(reverse)phase+=delta*1000*speed;else{int start=largeStride?(ChooseDragStart==null?0:ChooseDragStart(row,previousIndex)):(ChooseStart==null||row==4||row>=13?0:ChooseStart(row,previousIndex));start=Math.Max(0,Math.Min(ds.Length-1,start));phase=0;for(int i=0;i<start;i++)phase+=ds[i];}last=row;}else phase+=delta*1000*speed;
   double ms=phase%ds.Sum();int col=0;while(col<ds.Length-1&&ms>=ds[col])ms-=ds[col++];previousIndex=largeStride?(row==1?8+col:16+col):MotionData.Index(row,col);return previousIndex;
  }

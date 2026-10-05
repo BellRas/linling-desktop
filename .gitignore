@@ -9,6 +9,7 @@ memories.json.bak
 bin/
 build/
 obj/
+__pycache__/
 .vs/
 *.user
 *.suo

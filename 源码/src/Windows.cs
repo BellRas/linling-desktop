@@ -90,7 +90,7 @@ public sealed class SettingsWindow : Window {
   mem.Children.Add(Theme.Text("保存位置："+app.Store.DirectoryPath+"\n记录以明文留在当前 Windows 用户目录。聊天会发送近期对话与启用的记忆；整理记忆也会发送相关记录到你配置的服务。API Key 独立使用 Windows 加密。",11,Theme.Muted));
   test=Theme.Button("测试连接 · 发送一次短消息",false);test.HorizontalAlignment=HorizontalAlignment.Left;test.Click+=(s,e)=>Test();api.Children.Add(test);
   var note=Theme.Text("测试和聊天会向所填 API 服务发送内容，并可能产生该服务的调用费用。设置修改后点击「保存」。",11,Theme.Muted);note.Margin=new Thickness(0,6,0,0);api.Children.Add(note);
-   effects=Check(pet,"显示透明颜文字与状态动效",a.Config.Effects);top=Check(pet,"始终置顶",a.Config.Topmost);follow=Check(pet,"跟随鼠标转头",a.Config.FollowMouse);random=Check(pet,"随机眨眼、思考、观察和挥手",a.Config.RandomActions);startup=Check(pet,"登录 Windows 时启动",!a.Smoke&&Startup.Enabled);
+   effects=Check(pet,"显示透明颜文字与状态动效",a.Config.Effects);top=Check(pet,"始终置顶",a.Config.Topmost);follow=Check(pet,"跟随鼠标转头",a.Config.FollowMouse);random=Check(pet,"随机眨眼、思考、观察、挥手和睡觉",a.Config.RandomActions);startup=Check(pet,"登录 Windows 时启动",!a.Smoke&&Startup.Enabled);
    Theme.Label(pet,"主动陪伴强度","安静：不主动问候或随机表演；标准：约每 30 分钟问候；活泼：约每 20 分钟问候、随机动作更频繁。点击、拖动和聊天始终可用。");companion=new ComboBox{Margin=new Thickness(0,5,0,12),Height=34};companion.Items.Add("安静");companion.Items.Add("标准");companion.Items.Add("活泼");companion.SelectedIndex=a.Config.CompanionLevel;pet.Children.Add(companion);fullscreen=Check(pet,"全屏应用运行时暂停主动陪伴",a.Config.PauseInFullscreen);
   Theme.Label(pet,"宠物宽度（80–384）",null);size=Theme.Box(a.Config.Size.ToString(CultureInfo.InvariantCulture),false);pet.Children.Add(size);
   Theme.Label(pet,"互动 / 随机动作持续时间（1–30 秒）","聊天思考会持续到回复结束或取消，不受此时长限制。");duration=Theme.Box(a.Config.ActionSeconds.ToString(CultureInfo.InvariantCulture),false);pet.Children.Add(duration);

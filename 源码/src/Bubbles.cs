@@ -84,10 +84,10 @@ public sealed class CompanionBubbles {
  static double Clamp(double v,double min,double max){return Math.Max(min,Math.Min(v,Math.Max(min,max)));}
  public void Animate(int row,double now){
   if(row!=lastRow){lastRow=row;actionStart=now;}
-  string[] faces={"(｡•ᴗ•｡)","♪ →","← ♪","(｡･ω･)ﾉ","ヽ(•ω•)ﾉ","(；ω；)","(｡•́‿•̀｡)","(・・?)","(￢‿￢)","","","(ง •̀_•́)ง","(>﹏<)","(・ω|","|ω・)","(｡･ω･｡)","(˘︶˘)♪"};
+  string[] faces={"(｡•ᴗ•｡)","♪ →","← ♪","(｡･ω･)ﾉ","ヽ(•ω•)ﾉ","(；ω；)","(｡•́‿•̀｡)","(・・?)","(￢‿￢)","","","(ง •̀_•́)ง","(>﹏<)","(・ω|","|ω・)","(｡･ω･｡)","(˘︶˘)♪","(－_－) zZ"};
   face.Text=row<faces.Length?faces[row]:"✧";double phase=now-actionStart;face.Opacity=row==0?.30+.30*Math.Sin(now*1.5):.8+.2*Math.Sin(now*3);
   Canvas.SetLeft(face,4+Math.Round(3*Math.Sin(phase*2)));Canvas.SetTop(face,40+Math.Round(5*Math.Sin(phase*2.5)));
-  spark.Text=row==7?"···":row==12?"!":row==11?"↑":"✧";Canvas.SetLeft(spark,Effects.Width-45);Canvas.SetTop(spark,65+Math.Round(7*Math.Sin(phase*3)));spark.Opacity=.5+.4*Math.Sin(now*2);
+  spark.Text=row==17?"":row==7?"···":row==12?"!":row==11?"↑":"✧";Canvas.SetLeft(spark,Effects.Width-45);Canvas.SetTop(spark,65+Math.Round(7*Math.Sin(phase*3)));spark.Opacity=row==17?0:.5+.4*Math.Sin(now*2);
   if(now>nextMemory){nextMemory=now+30;app.Memories.Run(false);}
  }
 }

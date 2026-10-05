@@ -9,6 +9,7 @@ $arguments = @('/nologo','/target:winexe','/platform:anycpu','/optimize+','/utf8
 $arguments += '/resource:' + (Join-Path $PSScriptRoot 'drag.png') + ',drag.png'
 $arguments += '/resource:' + (Join-Path $PSScriptRoot 'edges.png') + ',edges.png'
 $arguments += '/resource:' + (Join-Path $PSScriptRoot 'motion.png') + ',motion.png'
+$arguments += '/resource:' + (Join-Path $PSScriptRoot 'sleep.png') + ',sleep.png'
 $arguments += $refs | ForEach-Object { '/reference:' + (Join-Path $framework $_) }
 $arguments += (Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'src') -Filter '*.cs').FullName
 & $compiler @arguments
