@@ -7,9 +7,9 @@ using System.Windows.Media;
 
 namespace Qingling {
 public static class MotionData {
- public static readonly int[] Counts={16,24,24,16,20,24,18,18,18,0,0,16,16,12,12,12,32,24};
- public static int Index(int row,int col){return 136+row*32+col;}
- public static int Row(int index){return index>=136?(index-136)/32:index/8;}
+ public static readonly int[] Counts={96,18,18,72,36,29,24,96,96,0,0,20,20,29,29,72,62,86};
+ public static int Index(int row,int col){return 136+row*96+col;}
+ public static int Row(int index){return index>=136?(index-136)/96:index/8;}
 }
 // Measured using a monotonic clock; background streaming never consumes reading time.
 public sealed class ReadingClock {

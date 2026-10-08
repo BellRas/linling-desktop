@@ -1,0 +1,220 @@
+{
+  "fps": 24,
+  "cell": [
+    192,
+    208
+  ],
+  "gazeDirections": 16,
+  "uniqueFullBodySprites": 16,
+  "uniqueLowerTorsoRegions": 16,
+  "torsoPixelsDifferentFromIdle": [
+    2767,
+    2839,
+    2760,
+    2681,
+    2687,
+    2664,
+    2694,
+    2675,
+    2713,
+    2715,
+    2708,
+    2657,
+    2720,
+    2699,
+    2729,
+    2730
+  ],
+  "substantiveAdjacentTransitions": 16,
+  "idleBounds": [
+    21,
+    14,
+    173,
+    197
+  ],
+  "gazeBounds": [
+    [
+      21,
+      13,
+      175,
+      197
+    ],
+    [
+      18,
+      14,
+      173,
+      197
+    ],
+    [
+      17,
+      16,
+      170,
+      197
+    ],
+    [
+      19,
+      13,
+      165,
+      197
+    ],
+    [
+      19,
+      11,
+      168,
+      197
+    ],
+    [
+      19,
+      13,
+      168,
+      197
+    ],
+    [
+      16,
+      11,
+      171,
+      197
+    ],
+    [
+      19,
+      14,
+      171,
+      197
+    ],
+    [
+      19,
+      16,
+      174,
+      197
+    ],
+    [
+      18,
+      19,
+      170,
+      197
+    ],
+    [
+      18,
+      18,
+      171,
+      197
+    ],
+    [
+      23,
+      17,
+      170,
+      197
+    ],
+    [
+      27,
+      16,
+      178,
+      197
+    ],
+    [
+      22,
+      14,
+      172,
+      197
+    ],
+    [
+      22,
+      14,
+      173,
+      197
+    ],
+    [
+      20,
+      13,
+      173,
+      197
+    ]
+  ],
+  "maxSizeDeviationPx": 6,
+  "maxFootBaselineDeviationPx": 0,
+  "footCentreXs": [
+    105.16,
+    105.52,
+    106.61,
+    107.76,
+    106.38,
+    106.64,
+    106.14,
+    106.09,
+    105.57,
+    105.83,
+    105.29,
+    104.99,
+    104.6,
+    104.71,
+    104.63,
+    104.67
+  ],
+  "feetCentreSpreadPx": 3.164,
+  "adjacentSilhouetteChanges": [
+    0.1009,
+    0.07557,
+    0.09101,
+    0.1173,
+    0.05816,
+    0.07069,
+    0.06755,
+    0.112,
+    0.07421,
+    0.03702,
+    0.05364,
+    0.10246,
+    0.06728,
+    0.05788,
+    0.07806,
+    0.08429
+  ],
+  "maxAdjacentSilhouetteChange": 0.1173,
+  "legSilhouetteChanges": [
+    0.17776,
+    0.19909,
+    0.20171,
+    0.26178,
+    0.10744,
+    0.12589,
+    0.08914,
+    0.20359,
+    0.05401,
+    0.05301,
+    0.06373,
+    0.1033,
+    0.04126,
+    0.06063,
+    0.05781,
+    0.03818
+  ],
+  "maxLegSilhouetteChange": 0.26178,
+  "idleToNeutralSilhouetteChange": 0.09111,
+  "adjacentAppearanceChanges": [
+    0.95956,
+    0.97147,
+    0.95998,
+    0.96526,
+    0.93932,
+    0.93433,
+    0.95422,
+    0.97318,
+    0.9432,
+    0.92889,
+    0.93639,
+    0.9635,
+    0.9534,
+    0.94937,
+    0.9702,
+    0.95037
+  ],
+  "maxAdjacentAppearanceChange": 0.97318,
+  "breathingFrames": 64,
+  "breathingStartsOnBasePose": true,
+  "breathingFeetStable": true,
+  "binaryAlpha": true,
+  "sourcePaletteOnly": true,
+  "unexpectedPaletteColorCount": 0,
+  "failures": [],
+  "ok": true
+}

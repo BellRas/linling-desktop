@@ -1,0 +1,31 @@
+{
+  "fps": 24,
+  "gazeDirections": 16,
+  "repaintedHeadPerspectives": 8,
+  "minimumHeadDifferenceFromTranslatedIdle": 0.6915,
+  "gazeBodyFixedBelowNeck": true,
+  "gazeBreathingFrames": 64,
+  "gazeBreathingFeetFixed": true,
+  "thinkingFrames": 96,
+  "observingFrames": 96,
+  "distinctPaintedActionPoses": [
+    7,
+    7
+  ],
+  "actionFeetFixed": true,
+  "actionsReturnToIdle": true,
+  "actionMaxAdjacentSilhouetteChange": [
+    0.01789,
+    0.03484
+  ],
+  "tailRootWidth": 16.3,
+  "tailTipWidth": 6.56,
+  "tailVisiblePixels": 732,
+  "tailHeadOverlapFraction": 0.0506,
+  "tailFrames": 72,
+  "tailMaxAdjacentSilhouetteChange": 0.00472,
+  "tailRightEdgePixels": 0,
+  "binaryAlpha": true,
+  "sourcePaletteOnly": true,
+  "ok": true
+}

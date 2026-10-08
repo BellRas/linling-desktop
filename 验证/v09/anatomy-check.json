@@ -1,0 +1,15 @@
+{
+  "idleBounds": [
+    21,
+    14,
+    173,
+    197
+  ],
+  "allGazeShoulderBasesMatchCorrectedMaster": true,
+  "runHeightDeviationPixels": 0,
+  "runFeetDeviationPixels": 1,
+  "waveUsesOnlyUnwarpedPaintedPoses": true,
+  "visibleTopTailAddedPixels": 103,
+  "topTailColoredPixels": 342,
+  "ok": true
+}

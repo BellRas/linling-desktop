@@ -1,0 +1,45 @@
+{
+  "fps": 24,
+  "motionFrames": 474,
+  "sleepFrames": 86,
+  "waveHandSwingPixels": 31.91,
+  "waveMaxAdjacentSilhouetteChange": 0.172,
+  "waveFootSilhouetteChange": 0.6387,
+  "waveTorsoSilhouetteChange": 0.1669,
+  "waveHeadSilhouetteChange": 0.2926,
+  "waveReturnsToNewIdle": true,
+  "jumpReturnsToIdle": true,
+  "jumpCrouchToAirborneChange": 0.235,
+  "jumpTakeoffToAirborneChange": 0.1081,
+  "binaryAlpha": true,
+  "sourcePaletteOnly": true,
+  "motionSheet": [
+    1536,
+    12480
+  ],
+  "sleepSheet": [
+    1536,
+    2288
+  ],
+  "counts": [
+    43,
+    18,
+    18,
+    72,
+    36,
+    29,
+    24,
+    20,
+    25,
+    0,
+    0,
+    20,
+    20,
+    29,
+    29,
+    29,
+    62,
+    86
+  ],
+  "ok": true
+}

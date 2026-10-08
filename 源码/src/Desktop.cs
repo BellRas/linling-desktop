@@ -20,8 +20,8 @@ public static class Native {
  [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT point);
 }
 public sealed class SpriteAtlas {
- readonly BitmapSource[] cells=new BitmapSource[704];
- public SpriteAtlas(){LoadDrag();LoadEdges();LoadMotion();LoadSleep();
+ readonly BitmapSource[] cells=new BitmapSource[1928];
+ public SpriteAtlas(){LoadDrag();LoadEdges();LoadMotion();LoadSleep();LoadGazeBreath();
   using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("qingling.png")){
    var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();
    if(sheet.PixelWidth!=1536||sheet.PixelHeight!=2288)throw new InvalidDataException("宠物图集尺寸不正确。");
@@ -31,11 +31,12 @@ public sealed class SpriteAtlas {
  void LoadDrag(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("drag.png")){var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();for(int r=0;r<2;r++)for(int c=0;c<4;c++){var cell=new CroppedBitmap(sheet,new Int32Rect(c*192,r*208,192,208));cell.Freeze();cells[(11+r)*8+c]=cell;}}}
  void LoadEdges(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("edges.png")){var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();for(int r=0;r<4;r++)for(int c=0;c<4;c++){var cell=new CroppedBitmap(sheet,new Int32Rect(c*192,r*208,192,208));cell.Freeze();cells[(13+r)*8+c]=cell;}}}
  readonly Dictionary<int,byte[]> pixels=new Dictionary<int,byte[]>();
- void LoadMotion(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("motion.png")){var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();int ordinal=0;for(int r=0;r<17;r++)for(int c=0;c<MotionData.Counts[r];c++){var cell=new CroppedBitmap(sheet,new Int32Rect(ordinal%8*192,ordinal/8*208,192,208));ordinal++;cell.Freeze();cells[MotionData.Index(r,c)]=cell;}}}
- void LoadSleep(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("sleep.png")){if(stream==null)throw new InvalidDataException("睡觉图集缺失。");var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();if(sheet.PixelWidth!=1536||sheet.PixelHeight!=624)throw new InvalidDataException("睡觉图集尺寸不正确。");for(int c=0;c<24;c++){var cell=new CroppedBitmap(sheet,new Int32Rect(c%8*192,c/8*208,192,208));cell.Freeze();cells[MotionData.Index(17,c)]=cell;}}}
+ void LoadMotion(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("motion24.png")){if(stream==null)throw new InvalidDataException("24 帧动作图集缺失。");var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();int total=0;for(int r=0;r<17;r++)total+=MotionData.Counts[r];if(sheet.PixelWidth!=1536||sheet.PixelHeight!=((total+7)/8)*208)throw new InvalidDataException("24 帧动作图集尺寸不正确。");int ordinal=0;for(int r=0;r<17;r++)for(int c=0;c<MotionData.Counts[r];c++){var cell=new CroppedBitmap(sheet,new Int32Rect(ordinal%8*192,ordinal/8*208,192,208));ordinal++;cell.Freeze();cells[MotionData.Index(r,c)]=cell;}}}
+ void LoadSleep(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("sleep24.png")){if(stream==null)throw new InvalidDataException("24 帧睡觉图集缺失。");var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();if(sheet.PixelWidth!=1536||sheet.PixelHeight!=2288)throw new InvalidDataException("24 帧睡觉图集尺寸不正确。");for(int c=0;c<MotionData.Counts[17];c++){var cell=new CroppedBitmap(sheet,new Int32Rect(c%8*192,c/8*208,192,208));cell.Freeze();cells[MotionData.Index(17,c)]=cell;}}}
+ void LoadGazeBreath(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("gaze-breath-v10.png")){if(stream==null)throw new InvalidDataException("呼吸视线图集缺失。");var sheet=new BitmapImage();sheet.BeginInit();sheet.CacheOption=BitmapCacheOption.OnLoad;sheet.StreamSource=stream;sheet.EndInit();sheet.Freeze();if(sheet.PixelWidth!=1536||sheet.PixelHeight!=1664)throw new InvalidDataException("呼吸视线图集尺寸不正确。");for(int i=0;i<64;i++){var cell=new CroppedBitmap(sheet,new Int32Rect(i%8*192,i/8*208,192,208));cell.Freeze();cells[1864+i]=cell;}}}
  byte[] Pixels(int i){byte[] data;if(!pixels.TryGetValue(i,out data)){var small=new TransformedBitmap(cells[i],new ScaleTransform(.25,.25));var format=new FormatConvertedBitmap(small,PixelFormats.Bgra32,null,0);data=new byte[48*52*4];format.CopyPixels(data,48*4,0);pixels[i]=data;}return data;}
  public int Closest(int row,int previous){if(previous<0||cells[previous]==null)return 0;var before=Pixels(previous);long best=long.MaxValue;int selected=0;for(int c=0;c<AnimationEngine.FrameCount(row);c++){var after=Pixels(MotionData.Index(row,c));long cost=0;for(int n=0;n<before.Length;n+=4){cost+=Math.Abs(before[n+3]-after[n+3])*3;if(before[n+3]>128&&after[n+3]>128)cost+=Math.Abs(before[n]-after[n])+Math.Abs(before[n+1]-after[n+1])+Math.Abs(before[n+2]-after[n+2]);}if(cost<best){best=cost;selected=c;}}return selected;}
- public int ClosestDrag(int row,int previous){if(previous<0||cells[previous]==null)return 0;var before=Pixels(previous);long best=long.MaxValue;int selected=0,start=row==1?8:16;for(int c=0;c<8;c++){var after=Pixels(start+c);long cost=0;for(int n=0;n<before.Length;n+=4){cost+=Math.Abs(before[n+3]-after[n+3])*3;if(before[n+3]>128&&after[n+3]>128)cost+=Math.Abs(before[n]-after[n])+Math.Abs(before[n+1]-after[n+1])+Math.Abs(before[n+2]-after[n+2]);}if(cost<best){best=cost;selected=c;}}return selected;}
+ public int ClosestDrag(int row,int previous){return Closest(row,previous);}
  public BitmapSource this[int index]{get{return cells[index];}}
 }
 public sealed class DesktopApp : Application {
@@ -78,13 +79,13 @@ public sealed class PetWindow : Window {
  readonly Stopwatch clock=Stopwatch.StartNew();readonly Random random=new Random();public readonly AnimationEngine Engine=new AnimationEngine();
  readonly GazeTracker gaze=new GazeTracker();readonly TranslateTransform motion=new TranslateTransform();GlobalMouse global;
  readonly BlinkClock blink=new BlinkClock();double nextRaise;IntPtr lastForeground;
- Point down,origin,lastDrag,dockFrom,dockTarget;bool pressed,dragged,docking;int frame=-1;Native.POINT lastCursor;int dismissStamp=-1;bool suppressContext;double lastMove=-100,nextRandom=20,dockBegan,lastTick,smoothX,smoothY;HwndSource source;
+ Point down,origin,lastDrag,dockFrom,dockTarget;bool pressed,dragged,docking,jumping;int frame=-1;Native.POINT lastCursor;int dismissStamp=-1;bool suppressContext;double lastMove=-100,nextRandom=20,dockBegan,lastTick,smoothX,smoothY,jumpAnchor;HwndSource source;
  public int DockRow {get{return Engine.DockRow;}}
  public int ActiveRow {get{return Engine.CurrentRow(clock.Elapsed.TotalSeconds);}}
  public string CurrentScreenName {get{return app.Config.DockScreen;}}
  public bool GlobalHookReady {get{return global!=null&&global.Installed;}}
  public PetWindow(DesktopApp a){app=a;Title="霖铃桌宠";WindowStyle=WindowStyle.None;ResizeMode=ResizeMode.NoResize;AllowsTransparency=true;Background=Brushes.Transparent;ShowInTaskbar=false;ShowActivated=false;
-  sprite.Stretch=Stretch.Fill;sprite.RenderTransform=motion;RenderOptions.SetBitmapScalingMode(sprite,BitmapScalingMode.NearestNeighbor);Content=sprite;Engine.ChooseStart=app.Atlas.Closest;Engine.ChooseDragStart=app.Atlas.ClosestDrag;
+  sprite.Stretch=Stretch.Fill;sprite.RenderTransform=motion;RenderOptions.SetBitmapScalingMode(sprite,BitmapScalingMode.NearestNeighbor);Content=sprite;Engine.ChooseStart=(row,previous)=>app.Atlas.Closest(row,frame>=0?frame:previous);Engine.ChooseDragStart=(row,previous)=>app.Atlas.ClosestDrag(row,frame>=0?frame:previous);
   ContextMenu=BuildMenu();PreviewMouseDown+=(s,e)=>{if(Engine.PreviewRow>=0)CancelPreviewClick(e.Timestamp);suppressContext=false;if(e.Timestamp==dismissStamp){suppressContext=e.ChangedButton==MouseButton.Right;e.Handled=true;return;}if(e.ChangedButton==MouseButton.Right)click.Stop();};ContextMenuOpening+=(s,e)=>{if(suppressContext){e.Handled=true;suppressContext=false;}};MouseLeftButtonDown+=Down;MouseMove+=Move;MouseLeftButtonUp+=Up;
   LostMouseCapture+=(s,e)=>{pressed=false;Engine.DragRow=-1;};
   click.Interval=TimeSpan.FromMilliseconds(Forms.SystemInformation.DoubleClickTime);click.Tick+=(s,e)=>{click.Stop();Play(3);};
@@ -96,35 +97,40 @@ public sealed class PetWindow : Window {
  ContextMenu BuildMenu(){var m=new ContextMenu();Add(m,"和霖铃聊天",app.OpenChat);Add(m,"显示输入框",()=>app.Bubbles.ShowInput());Add(m,"隐藏输入框",()=>app.Bubbles.HideInput());Add(m,"对话记录",app.OpenHistory);Add(m,"设置",app.OpenSettings);m.Items.Add(new Separator());Add(m,"预览 · 挥手",()=>Preview(3));Add(m,"预览 · 跳跃",()=>Preview(4));Add(m,"预览 · 思考",()=>Preview(7));Add(m,"预览 · 观察",()=>Preview(8));Add(m,"预览 · 睡觉（点击唤醒）",()=>Preview(17));Add(m,"预览 · 攀爬",()=>Preview(11));Add(m,"预览 · 坠落",()=>Preview(12));m.Items.Add(new Separator());Add(m,"移回屏幕",ResetPosition);Add(m,"隐藏到托盘",()=>Hide());Add(m,"退出",app.Quit);return m;}
  static void Add(ContextMenu m,string title,Action action){var i=new MenuItem{Header=title};i.Click+=(s,e)=>action();m.Items.Add(i);}
  public void ApplySettings(){Width=app.Config.Size;Height=Width*208/192;Topmost=app.Config.Topmost;nextRandom=clock.Elapsed.TotalSeconds+CompanionPolicy.RandomInterval(app.Config.RandomMin,app.Config.CompanionLevel);if(IsLoaded){if(DockRow>=13)Dock(DockRow,false);else EnsureVisible();}}
- public void ResetPosition(){Engine.DockRow=-1;app.Config.DockSide=-1;docking=false;sprite.Clip=null;Width=app.Config.Size;Height=Width*208/192;var area=ScreenArea.Read(this,"");Rect r=area.Work;Left=r.Right-Width-32;Top=r.Bottom-Height-32;app.Config.DockScreen=area.Name;SavePosition();}
+ public void ResetPosition(){EndJump();Engine.DockRow=-1;app.Config.DockSide=-1;docking=false;sprite.Clip=null;Width=app.Config.Size;Height=Width*208/192;var area=ScreenArea.Read(this,"");Rect r=area.Work;Left=r.Right-Width-32;Top=r.Bottom-Height-32;app.Config.DockScreen=area.Name;SavePosition();}
  public void EnsureVisible(){if(DockRow>=13){Dock(DockRow,false);return;}bool visible=false;Rect pet=new Rect(Left,Top,Width,Height);foreach(var screen in Forms.Screen.AllScreens){var area=ScreenArea.Read(this,screen.DeviceName);var inter=Rect.Intersect(pet,area.Work);if(!inter.IsEmpty&&inter.Width>=Math.Min(Width,40)&&inter.Height>=Math.Min(Height,40)){visible=true;app.Config.DockScreen=area.Name;break;}}if(!visible)ResetPosition();}
- void SavePosition(){app.Config.X=Left;app.Config.Y=Top;app.Config.DockSide=DockRow;if(app.Smoke)return;try{app.Store.Save(app.Config);}catch{}}
+ void SavePosition(){app.Config.X=Left;app.Config.Y=jumping?jumpAnchor:Top;app.Config.DockSide=DockRow;if(app.Smoke)return;try{app.Store.Save(app.Config);}catch{}}
  public void Preview(int row){click.Stop();Engine.ClearTransient();Engine.PreviewRow=row;}
  public void CancelPreviewClick(){CancelPreviewClick(Environment.TickCount);} public void CancelPreviewClick(int stamp){Engine.PreviewRow=-1;Engine.ClearTransient();click.Stop();pressed=false;Engine.DragRow=-1;dismissStamp=stamp;if(IsMouseCaptured)ReleaseMouseCapture();}
  public void Play(int row){if(Engine.PreviewRow<0)Engine.Play(row,clock.Elapsed.TotalSeconds,app.Config.ActionSeconds);}
  public void Busy(bool busy){Engine.Busy=busy;if(busy)Engine.ClearTransient();}
  public void Stop(){tick.Stop();click.Stop();if(global!=null)global.Dispose();if(source!=null)source.RemoveHook(HitTest);}
- public void Dock(int row,bool animate){var area=ScreenArea.Read(this,app.Config.DockScreen);Engine.DockRow=row;Engine.ClearTransient();app.Config.DockSide=row;app.Config.DockScreen=area.Name;
+ public void Dock(int row,bool animate){EndJump();var area=ScreenArea.Read(this,app.Config.DockScreen);Engine.DockRow=row;Engine.ClearTransient();app.Config.DockSide=row;app.Config.DockScreen=area.Name;
   Width=app.Config.Size;Height=Width*208/192;if(row==16){double bar=area.Bounds.Bottom-area.Work.Bottom;if(bar>=16&&Height*.235>bar){Height=bar/.235;Width=Height*192/208;}}
   sprite.Clip=new RectangleGeometry(Docking.Clip(row,Width,Height));dockFrom=new Point(Left,Top);dockTarget=Docking.Target(row,new Rect(Left,Top,Width,Height),area);dockBegan=clock.Elapsed.TotalSeconds;docking=animate;
   if(!animate){Left=dockTarget.X;Top=dockTarget.Y;SavePosition();}
  }
- void Undock(){docking=false;Engine.DockRow=-1;app.Config.DockSide=-1;sprite.Clip=null;Width=app.Config.Size;Height=Width*208/192;}
- void Down(object sender,MouseButtonEventArgs e){if(e.ChangedButton!=MouseButton.Left)return;if(e.Timestamp==dismissStamp){e.Handled=true;return;}bool twice=click.IsEnabled;click.Stop();if(twice){Play(4);e.Handled=true;return;}
+ void Undock(){EndJump();docking=false;Engine.DockRow=-1;app.Config.DockSide=-1;sprite.Clip=null;Width=app.Config.Size;Height=Width*208/192;}
+ void EndJump(){if(!jumping)return;Top=jumpAnchor;jumping=false;}
+ void Down(object sender,MouseButtonEventArgs e){if(e.ChangedButton!=MouseButton.Left)return;if(e.Timestamp==dismissStamp){e.Handled=true;return;}bool twice=click.IsEnabled;click.Stop();if(twice){Play(4);e.Handled=true;return;}if(jumping){EndJump();Engine.ClearTransient();}
   Native.POINT p;Native.GetCursorPos(out p);down=new Point(p.X,p.Y);lastDrag=down;origin=new Point(Left,Top);pressed=true;dragged=false;CaptureMouse();e.Handled=true;}
  void Move(object sender,MouseEventArgs e){if(!pressed)return;Native.POINT p;Native.GetCursorPos(out p);Vector d=new Point(p.X,p.Y)-down;var matrix=PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;d=matrix.Transform(d);
   if(!dragged&&Math.Abs(d.X)<SystemParameters.MinimumHorizontalDragDistance&&Math.Abs(d.Y)<SystemParameters.MinimumVerticalDragDistance)return;
   if(!dragged)Undock();dragged=true;click.Stop();Vector step=new Point(p.X,p.Y)-lastDrag;if(step.Length>2){Engine.DragRow=AnimationEngine.Drag(step.X,step.Y);lastDrag=new Point(p.X,p.Y);}Left=origin.X+d.X;Top=origin.Y+d.Y;app.Config.DockScreen=ScreenArea.Read(this,"").Name;}
  void Up(object sender,MouseButtonEventArgs e){if(!pressed)return;bool wasDrag=dragged;pressed=false;Engine.DragRow=-1;ReleaseMouseCapture();if(wasDrag){var area=ScreenArea.Read(this,app.Config.DockScreen);int row=Docking.Detect(new Rect(Left,Top,Width,Height),area);if(row>=13)Dock(row,true);else{EnsureVisible();SavePosition();}}else click.Start();e.Handled=true;}
- void Update(){if(app.Bubbles!=null)app.Bubbles.Follow();if(!IsVisible)return;double now=clock.Elapsed.TotalSeconds,dt=Math.Min(.1,Math.Max(0,now-lastTick));lastTick=now;
+ void Update(){if(!IsVisible)return;double now=clock.Elapsed.TotalSeconds,dt=Math.Min(.1,Math.Max(0,now-lastTick));lastTick=now;
   IntPtr foreground=PetZOrder.GetForegroundWindow();if(now>=nextRaise||foreground!=lastForeground){nextRaise=now+.25;lastForeground=foreground;if(ContextMenu==null||!ContextMenu.IsOpen)PetZOrder.Raise(this);}
   if(docking&&!pressed){double t=(now-dockBegan)/.22,f=Docking.Ease(t);Left=dockFrom.X+(dockTarget.X-dockFrom.X)*f;Top=dockFrom.Y+(dockTarget.Y-dockFrom.Y)*f;if(t>=1){docking=false;SavePosition();}}
   Native.POINT p;Native.GetCursorPos(out p);if(Math.Abs(p.X-lastCursor.X)+Math.Abs(p.Y-lastCursor.Y)>2){lastMove=now;lastCursor=p;}
   if(now>=nextRandom){nextRandom=now+CompanionPolicy.RandomInterval(app.Config.RandomMin+random.NextDouble()*(app.Config.RandomMax-app.Config.RandomMin),app.Config.CompanionLevel);if(app.Config.RandomActions&&CompanionPolicy.Proactive(app.Config.CompanionLevel,app.Config.PauseInFullscreen&&CompanionPolicy.Fullscreen())&&!Engine.Busy&&!pressed&&Engine.CurrentRow(now)==0&&now-lastMove>2){int[] rows={0,0,7,8,3,17};int selected=rows[random.Next(rows.Length)];Engine.Play(selected,now,selected==17?Math.Max(8,app.Config.ActionSeconds*2):app.Config.ActionSeconds);}}
   int index=Engine.Frame(now,app.Config.Speed),row=Engine.CurrentRow(now);
-  if(app.Config.FollowMouse&&!pressed&&row==0&&now-lastMove<1.8){Point local=PointFromScreen(new Point(p.X,p.Y));double dx=local.X-Width/2,dy=local.Y-Height*.38;if(dx*dx+dy*dy<1000000){int look=gaze.Update(dx,dy);if(look>=0)index=look;}}
-  int blinkFrame=blink.Frame(now,app.Config.BlinkSeconds,(row==0||row>=13&&row<=15)&&!(index>=72&&index<88));if(blinkFrame>=0)index=row>=13?row*8+(blinkFrame==2?2:1):blinkFrame;
-  double phase=now*app.Config.Speed,x=(row==12?2:row==11?1:0)*Math.Sin(phase*10),y=row>=13?0:row==11?2*Math.Sin(phase*12):row==12?2*Math.Sin(phase*8):Math.Sin(phase*2),ease=1-Math.Exp(-dt/.065);smoothX+=(x-smoothX)*ease;smoothY+=(y-smoothY)*ease;motion.X=Math.Round(smoothX);motion.Y=Math.Round(smoothY);
+  if(row==4&&!pressed&&!docking&&DockRow<13){if(!jumping){jumpAnchor=Top;jumping=true;}var area=ScreenArea.Read(this,app.Config.DockScreen);double lift=Math.Min(AnimationEngine.JumpArc.Offset(Engine.PhaseFraction(4),Height),Math.Max(0,jumpAnchor-area.Bounds.Top-3));Top=jumpAnchor-lift;}else EndJump();
+  if(app.Bubbles!=null)app.Bubbles.Follow();
+  bool tracking=false;
+  if(row==0&&!(pressed&&dragged)){Point local=PointFromScreen(new Point(p.X,p.Y));double dx=local.X-Width/2,dy=local.Y-Height*.38;bool follow=app.Config.FollowMouse&&now-lastMove<2.5;int look=gaze.Update(dx,dy,now,follow);if(look>=0){int step=index-MotionData.Index(0,0);int rise=(int)Math.Round(1.5*(1-Math.Cos(2*Math.PI*step/96)));index=1864+(look-72)*4+rise;tracking=true;}}
+  else gaze.Relax(now);
+  int blinkFrame=blink.Frame(now,app.Config.BlinkSeconds,(row==0||row==13||row==14)&&!tracking);if(blinkFrame>=0)index=row>=13?row*8+(blinkFrame==2?2:1):blinkFrame;
+  double phase=now*app.Config.Speed,x=(row==12?2:row==11?1:0)*Math.Sin(phase*10),y=row==0||row>=13?0:row==11?2*Math.Sin(phase*12):row==12?2*Math.Sin(phase*8):Math.Sin(phase*2),ease=1-Math.Exp(-dt/.065);smoothX+=(x-smoothX)*ease;smoothY+=(y-smoothY)*ease;motion.X=Math.Round(smoothX);motion.Y=Math.Round(smoothY);
   if(app.Bubbles!=null)app.Bubbles.Animate(row,now);if(index!=frame){frame=index;sprite.Source=app.Atlas[index];}
  }
  IntPtr HitTest(IntPtr hwnd,int msg,IntPtr wp,IntPtr lp,ref bool handled){if(msg!=0x84||pressed||frame<0)return IntPtr.Zero;long n=lp.ToInt64();Point local=PointFromScreen(new Point((short)(n&65535),(short)((n>>16)&65535)));

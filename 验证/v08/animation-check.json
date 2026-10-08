@@ -1,0 +1,22 @@
+{
+  "fps": 24,
+  "idleFrames": 96,
+  "idleDistinctBodyPoses": 4,
+  "idleFeetFixed": true,
+  "idleLoopStep": 0.01581,
+  "uniqueGazeDirections": 16,
+  "gazeTurnsHeadOutsideEyes": true,
+  "gazeAndBreathingKeepLowerBodyFixed": true,
+  "gazeBreathingFrames": 64,
+  "thinkingDistinctPoses": 4,
+  "observingDistinctPoses": 5,
+  "newActionsReturnToIdleAndShareFootLine": true,
+  "thinkingMaxStep": 0.03734,
+  "observingMaxStep": 0.05561,
+  "topTailFrames": 72,
+  "topTailVisiblePixels": 1104,
+  "topTailHeadOverlapFraction": 0.1005,
+  "topTailRightEdgePixels": 0,
+  "topTailMaxStep": 0.00236,
+  "ok": true
+}

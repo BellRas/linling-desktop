@@ -1,0 +1,15 @@
+{
+  "fps": 24,
+  "stableBlinkBody": true,
+  "stableGazeBody": true,
+  "uniqueGazeDirections": 16,
+  "idleHasNoWarpOrJitter": true,
+  "waveOnlyUsesPaintedFullBodyPoses": true,
+  "uniqueWavePoses": 11,
+  "tailFrames": 72,
+  "uniqueTailPositions": 35,
+  "topHeadStable": true,
+  "tailRightEdgePixels": 0,
+  "tailMaxAdjacentSilhouetteChange": 0.00168,
+  "ok": true
+}

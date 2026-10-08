@@ -168,8 +168,6 @@ public sealed class ChatApi : IDisposable {
  public void Dispose(){client.Dispose();}
 }
 public sealed class AnimationEngine {
- public static readonly int[] Counts={6,8,8,4,5,8,6,6,6};
- public static readonly int[][] Durations={new[]{280,110,110,140,140,320},new[]{120,120,120,120,120,120,120,220},new[]{120,120,120,120,120,120,120,220},new[]{140,140,140,280},new[]{140,140,140,140,280},new[]{140,140,140,140,140,140,140,240},new[]{150,150,150,150,150,260},new[]{120,120,120,120,120,220},new[]{150,150,150,150,150,280}};
  public Func<int,int,int> ChooseStart,ChooseDragStart;public int PreviewRow=-1,DockRow=-1;double phase,lastTime=-1;int previousIndex=-1;
  public bool Busy; public int DragRow=-1; int transient=-1; double until; int last=-1;
  public void ClearTransient(){transient=-1;until=0;}
@@ -178,22 +176,53 @@ public sealed class AnimationEngine {
  public int CurrentRow(double now){if(DragRow>=0)return DragRow;if(PreviewRow>=0)return PreviewRow;if(DockRow>=0)return DockRow;if(now<until&&transient>=0)return transient;return Busy?7:0;}
  public static int FrameCount(int row){return MotionData.Counts[row];}
  static readonly Dictionary<int,int[]> timing=new Dictionary<int,int[]>();
- public static int[] Timing(int row){int[] values;if(timing.TryGetValue(row,out values))return values;int count=FrameCount(row),total=row==17?3600:row==16?2600:row>=13||row==1||row==2?1200:row>=11?800:row==0?1800:Durations[row].Sum();values=new int[count];for(int i=0;i<count;i++)values[i]=total/count;values[count-1]+=total%count;timing[row]=values;return values;}
- public int Frame(double now,double speed){int row=CurrentRow(now);bool largeStride=(row==1||row==2)&&DragRow==row;var ds=largeStride?LargeDragTiming:Timing(row);double delta=lastTime<0?0:Math.Max(0,now-lastTime);lastTime=now;
+ public static int[] Timing(int row){int[] values;if(timing.TryGetValue(row,out values))return values;int count=FrameCount(row);values=new int[count];for(int i=0;i<count;i++)values[i]=(int)Math.Round((i+1)*1000.0/24)-(int)Math.Round(i*1000.0/24);timing[row]=values;return values;}
+ public double PhaseFraction(int row){var ds=Timing(row);return ds.Length==0?0:(phase%ds.Sum())/ds.Sum();}
+ public int Frame(double now,double speed){int row=CurrentRow(now);var ds=Timing(row);double delta=lastTime<0?0:Math.Max(0,now-lastTime);lastTime=now;
   if(row==16||row==17)speed=Math.Min(speed,1); // Seated and sleeping loops stay calm at high action speeds.
-  if(row!=last){bool reverse=(row==1&&last==2)||(row==2&&last==1);if(reverse)phase+=delta*1000*speed;else{int start=largeStride?(ChooseDragStart==null?0:ChooseDragStart(row,previousIndex)):(ChooseStart==null||row==4||row>=13?0:ChooseStart(row,previousIndex));start=Math.Max(0,Math.Min(ds.Length-1,start));phase=0;for(int i=0;i<start;i++)phase+=ds[i];}last=row;}else phase+=delta*1000*speed;
-  double ms=phase%ds.Sum();int col=0;while(col<ds.Length-1&&ms>=ds[col])ms-=ds[col++];previousIndex=largeStride?(row==1?8+col:16+col):MotionData.Index(row,col);return previousIndex;
+  if(row!=last){bool reverse=(row==1&&last==2)||(row==2&&last==1);if(reverse)phase+=delta*1000*speed;else{bool drag=(row==1||row==2)&&DragRow==row;int start=drag?(ChooseDragStart==null?0:ChooseDragStart(row,previousIndex)):(ChooseStart==null||row==3||row==4||row>=13?0:ChooseStart(row,previousIndex));start=Math.Max(0,Math.Min(ds.Length-1,start));phase=0;for(int i=0;i<start;i++)phase+=ds[i];}last=row;}else phase+=delta*1000*speed;
+  double ms=phase%ds.Sum();int col=0;while(col<ds.Length-1&&ms>=ds[col])ms-=ds[col++];previousIndex=MotionData.Index(row,col);return previousIndex;
  }
- public static readonly int[] LargeDragTiming={90,80,80,90,90,80,80,110};
+ public static class JumpArc {
+  public static double Offset(double fraction,double height){if(fraction<=.18||fraction>=.82)return 0;double t=(fraction-.18)/.64;return height*.23*Math.Sin(Math.PI*t);}
+ }
  public static int Look(double dx,double dy){if(dx*dx+dy*dy<144)return -1;double degrees=(Math.Atan2(dx,-dy)*180/Math.PI+360)%360;int index=(int)Math.Floor(degrees/22.5+.5)%16;return 9*8+index;}
 }
 public sealed class GazeTracker {
- double x,y;int sector=-1;
- public int Update(double dx,double dy){x+=(dx-x)*.18;y+=(dy-y)*.18;if(x*x+y*y<144)return -1;
-  double angle=(Math.Atan2(x,-y)*180/Math.PI+360)%360;
-  if(sector>=0){double difference=(angle-sector*22.5+540)%360-180;if(Math.Abs(difference)<14.5)return 72+sector;}
-  sector=(int)Math.Floor(angle/22.5+.5)%16;return 72+sector;
+ const double SectorSeconds=1.0/24,NeutralSeconds=.18;
+ const int NeutralSector=0;
+ int sector=-1,target=-1;double lastStep=-1,neutralSince=-1;
+ bool withinRange,centerHold;
+ public int Update(double dx,double dy,double now,bool enabled){
+  double radius=dx*dx+dy*dy;
+  withinRange=enabled&&radius<(withinRange?1040.0*1040:1000.0*1000);
+  if(withinRange){
+   if(centerHold){if(radius>=18.0*18)centerHold=false;}
+   else if(radius<=12.0*12)centerHold=true;
+   if(centerHold){target=sector;}
+   else{
+    double angle=(Math.Atan2(dx,-dy)*180/Math.PI+360)%360;
+    double difference=(angle-target*22.5+540)%360-180;
+    if(target<0||Math.Abs(difference)>=14.5)target=(int)Math.Floor(angle/22.5+.5)%16;
+   }
+   neutralSince=-1;
+  }else{centerHold=false;target=NeutralSector;}
+  if(sector<0){
+   if(!withinRange||centerHold)return -1;
+   sector=NeutralSector;lastStep=now;
+  }else if(target>=0&&target!=sector&&now-lastStep>=SectorSeconds){
+   int clockwise=(target-sector+16)%16;
+   sector=(sector+(clockwise<=8?1:15))%16;
+   lastStep+=SectorSeconds;
+   if(now-lastStep>SectorSeconds)lastStep=now;
+  }
+  if(!withinRange&&sector==NeutralSector){
+   if(neutralSince<0)neutralSince=now;
+   if(now-neutralSince>=NeutralSeconds){sector=-1;lastStep=now;return -1;}
+  }else neutralSince=-1;
+  return 72+sector;
  }
+ public int Relax(double now){return Update(0,0,now,false);}
 }
 }
 

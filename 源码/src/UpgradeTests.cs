@@ -34,10 +34,10 @@ public static class UpgradeTests {
   book.Forget(false);Check(book.Pending().Count==0&&book.State.Pinned==""&&book.Turns.Count==3,"Forget does not relearn old conversations");
   book.Add("新的经历","新的回答","complete");Check(book.Pending().Count==1,"New conversations remain learnable after forget");book.Forget(true);
   restored=new MemoryBook(directory);Check(restored.Turns.Count==0&&restored.State.Long==""&&!File.Exists(Path.Combine(directory,"memories.json.bak")),"Full erase removes persisted transcript and memory backup");
-  Check(AnimationEngine.Drag(2,-20)==11&&AnimationEngine.Drag(2,20)==12,"Vertical drag selects climbing and falling");Check(AnimationEngine.Drag(20,2)==1&&AnimationEngine.Drag(-20,2)==2,"Horizontal drag retains direction-aware gait");var large=new AnimationEngine{DragRow=2};int largeCell=large.Frame(0,1);Check(largeCell>=16&&largeCell<24,"Every left drag selects original full-stride source cells");
-  var selectedStride=new AnimationEngine{DragRow=1,ChooseDragStart=(row,previous)=>5};Check(selectedStride.Frame(0,1)==13,"Large-stride entry uses a matching original source pose");
+  Check(AnimationEngine.Drag(2,-20)==11&&AnimationEngine.Drag(2,20)==12,"Vertical drag selects climbing and falling");Check(AnimationEngine.Drag(20,2)==1&&AnimationEngine.Drag(-20,2)==2,"Horizontal drag retains direction-aware gait");var large=new AnimationEngine{DragRow=2};int largeCell=large.Frame(0,1);Check(largeCell>=MotionData.Index(2,0)&&largeCell<MotionData.Index(2,18),"Every left drag selects 24 fps full-stride poses");
+  var selectedStride=new AnimationEngine{DragRow=1,ChooseDragStart=(row,previous)=>5};Check(selectedStride.Frame(0,1)==MotionData.Index(1,5),"Large-stride entry uses a matching retimed pose");
   Check(CompanionPolicy.Proactive(0,false)==false&&CompanionPolicy.Proactive(1,false)&&!CompanionPolicy.Proactive(2,true)&&CompanionPolicy.GreetingInterval(2)==1200&&CompanionPolicy.RandomInterval(20,2)<20,"Companion levels adjust only proactive activity");
-  var engine=new AnimationEngine{DragRow=11};Check(engine.Frame(0,1)==MotionData.Index(11,0)&&engine.Frame(.15,1)==MotionData.Index(11,3),"Climbing advances through new frames");engine.DragRow=12;Check(engine.Frame(1,1)==MotionData.Index(12,0)&&engine.Frame(1.3,1)==MotionData.Index(12,6),"Falling advances through new frames");
+  var engine=new AnimationEngine{DragRow=11};Check(engine.Frame(0,1)==MotionData.Index(11,0)&&engine.Frame(.15,1)==MotionData.Index(11,3),"Climbing advances through new frames");engine.DragRow=12;Check(engine.Frame(1,1)==MotionData.Index(12,0)&&engine.Frame(1.3,1)==MotionData.Index(12,7),"Falling advances through new frames");
   var sleeping=new AnimationEngine{PreviewRow=17};int first= sleeping.Frame(0,1);Check(first==MotionData.Index(17,0)&&sleeping.CurrentRow(1000)==17,"Sleeping preview stays curled until a click dismisses it");sleeping.PreviewRow=-1;sleeping.ClearTransient();Check(sleeping.CurrentRow(1000)==0,"Dismissing sleep preview returns to idle");
   Directory.Delete(directory,true);
  }
@@ -57,7 +57,7 @@ public static class UpgradeTests {
  public static void Ui(DesktopApp app,string path){
   Directory.CreateDirectory(path);app.Config.Model="mock-preview";app.Config.MemoryEvery=1;
   app.Pet.Left=650;app.Pet.Top=400;app.Bubbles.Show();app.OpenHistory();
-  var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(600)};int step=0,waits=0;bool second=false;SettingsWindow settings=null;
+  var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(600)};int step=0,waits=0;bool second=false;double jumpBaseline=0;SettingsWindow settings=null;
   timer.Tick+=(s,e)=>{try{
    if(step==0){app.Chat.Submit("今天一起读书吧。");step++;}
    else if(step==1){if(app.Request!=null||app.Memories.Running){if(++waits>30)throw new Exception("UI request timeout");return;}
@@ -73,7 +73,9 @@ public static class UpgradeTests {
     app.Pet.Engine.DragRow=11;step++;
    }else if(step==3){Capture(app.Pet,Path.Combine(path,"climbing.png"));app.Pet.Engine.DragRow=12;step++;}
    else if(step==4){Capture(app.Pet,Path.Combine(path,"falling.png"));app.Pet.Engine.DragRow=-1;app.Pet.Preview(17);step++;}
-   else {Capture(app.Pet,Path.Combine(path,"sleeping.png"));app.Pet.CancelPreviewClick();
+   else if(step==5){Capture(app.Pet,Path.Combine(path,"sleeping.png"));app.Pet.CancelPreviewClick();app.Pet.Top=400;jumpBaseline=app.Pet.Top;app.Pet.Preview(4);step++;}
+   else if(step==6){Check(app.Pet.Top<jumpBaseline-16,"Jump lifts the actual pet window without clipping the head");Capture(app.Pet,Path.Combine(path,"jumping.png"));app.Pet.CancelPreviewClick();step++;}
+   else {Check(Math.Abs(app.Pet.Top-jumpBaseline)<1,"Jump returns to its original desktop position");
     app.Pet.Left=0;app.Pet.Top=0;app.Bubbles.Follow();Check(app.Bubbles.Reply.Left>=0&&app.Bubbles.Reply.Top>=0&&app.Bubbles.Input.Top>=0,"Bubbles clamp at upper screen edge");
     File.WriteAllText(Path.Combine(path,"ui-test-results.json"),Json.Write(new{ok=true,tests=Results}),Encoding.UTF8);timer.Stop();app.Quit();}
   }catch(Exception ex){File.WriteAllText(Path.Combine(path,"ui-test-results.json"),Json.Write(new{ok=false,error=ex.ToString(),tests=Results}),Encoding.UTF8);timer.Stop();app.Quit();}};timer.Start();
